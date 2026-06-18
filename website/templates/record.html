@@ -32,6 +32,11 @@
 <strong>Zipcode: </strong>{{ customer_record.zipcode }}</p>
 
 <p class="card-text">
+<strong>Notes: </strong><br>
+{{ customer_record.notes|default:'No notes available' }}
+</p>
+
+<p class="card-text">
 <strong>Create At: </strong>{{ customer_record.created_at }}</p>
 
 <p class="card-text">

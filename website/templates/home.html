@@ -15,11 +15,24 @@
       placeholder="Search customer..."
       value="{{ request.GET.q }}"
     >
+    <select name="sort" class="form-select" style="max-width: 180px;">
+      <option value="first_name">Sort by Name</option>
+      <option value="email">Sort by Email</option>
+      <option value="city">Sort by City</option>
+    </select>
     <button class="btn btn-primary" type="submit">
       Search
     </button>
   </div>
 </form>
+<a href="{% url 'export_csv' %}"
+   class="btn btn-success mb-3">
+   Export CSV
+</a>
+<a href="{% url 'export_pdf' %}"
+   class="btn btn-danger mb-3">
+   Export PDF
+</a>
 {% if request.GET.q %}
 <div class="alert alert-info">
   Search results for: <strong>{{ request.GET.q }}</strong>
@@ -31,7 +44,7 @@
     <div class="card text-bg-primary">
       <div class="card-body">
         <h5>Total Customers</h5>
-        <h3>{{ records|length }}</h3>
+        <h3>{{ total_customers }}</h3>
         <p class="mb-0">CRM Dashboard</p>
         <small>Showing {{ records|length }} record(s)</small>
       </div>
@@ -40,9 +53,7 @@
 </div>
 
 
-
-
-
+<div class="table-responsive">
 <table class="table table-striped table-hover table-bordered">
   <thead class="table-dark">
     <tr>
@@ -69,7 +80,7 @@
 			<td>{{ record.city }}</td>
 			<td>{{ record.state }}</td>
 			<td>{{ record.zipcode }}</td>
-			<td>{{ record.created_at }}</td>
+			<td>{{ record.created_at|date:"d M Y" }}</td>
 			<td>
   <a href="{% url 'record' record.id %}" class="btn btn-info btn-sm">
     View
@@ -95,20 +106,22 @@
 </tr>
 {% endif %}
 
+
 	
 	  </tbody>
 	</table>
+</div>
 
 <nav>
   <ul class="pagination justify-content-center">
 
     {% if records.has_previous %}
       <li class="page-item">
-        <a class="page-link" href="?page=1">First</a>
+        <a class="page-link" href="?page=1&q={{ request.GET.q }}">First</a>
       </li>
 
       <li class="page-item">
-        <a class="page-link" href="?page={{ records.previous_page_number }}">
+        <a class="page-link" href="?page={{ records.previous_page_number }}&q={{ request.GET.q }}">
           Previous
         </a>
       </li>
@@ -122,13 +135,13 @@
 
     {% if records.has_next %}
       <li class="page-item">
-        <a class="page-link" href="?page={{ records.next_page_number }}">
+        <a class="page-link" href="?page={{ records.next_page_number }}&q={{ request.GET.q }}">
           Next
         </a>
       </li>
 
       <li class="page-item">
-        <a class="page-link" href="?page={{ records.paginator.num_pages }}">
+        <a class="page-link" href="?page={{ records.paginator.num_pages }}&q={{ request.GET.q }}">
           Last
         </a>
       </li>

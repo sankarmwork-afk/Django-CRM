@@ -9,5 +9,7 @@ urlpatterns = [
     path('delete_record/<int:pk>', views.delete_record, name='delete_record'),
     path('add_record/', views.add_record, name='add_record'),
     path('update_record/<int:pk>', views.update_record, name='update_record'),
+    path('export-csv/', views.export_csv, name='export_csv'),
+    path('export-pdf/', views.export_pdf, name='export_pdf'),
 
 ]

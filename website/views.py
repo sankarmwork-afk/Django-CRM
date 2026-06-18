@@ -5,11 +5,15 @@ from .forms import SignUpForm, AddRecordForm
 from .models import Record
 from django.db.models import Q
 from django.core.paginator import Paginator
+import csv
+from django.http import HttpResponse
+from reportlab.pdfgen import canvas
 
 
 def home(request):
 
 	query = request.GET.get('q')
+	sort = request.GET.get('sort', 'first_name')
 
 	if query:
 		records = Record.objects.filter(
@@ -21,9 +25,16 @@ def home(request):
 	else:
 		records = Record.objects.all()
 
+		allowed_sorts = ['first_name', 'email', 'city']
+		if sort not in allowed_sorts:
+			sort = 'first_name'
+
+		records = records.order_by(sort)
+
 	paginator = Paginator(records, 10)
 	page = request.GET.get('page')
 	records = paginator.get_page(page)
+	total_customers = Record.objects.count()
 
 	# Check to see if logging in
 	if request.method == 'POST':
@@ -40,7 +51,10 @@ def home(request):
 			messages.success(request, "There Was An Error Logging In, Please Try Again...")
 			return redirect('home')
 
-	return render(request, 'home.html', {'records': records})
+	return render(request, 'home.html', {
+		'records': records,
+		'total_customers': total_customers,
+	})
 
 
 def logout_user(request):
@@ -117,3 +131,59 @@ def update_record(request, pk):
 	else:
 		messages.success(request, "You Must Be Logged In...")
 		return redirect('home')
+def export_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="customers.csv"'
+
+    writer = csv.writer(response)
+
+    writer.writerow([
+        'First Name',
+        'Last Name',
+        'Email',
+        'Phone',
+        'City',
+        'State'
+    ])
+
+    records = Record.objects.all()
+
+    for record in records:
+        writer.writerow([
+            record.first_name,
+            record.last_name,
+            record.email,
+            record.phone,
+            record.city,
+            record.state
+        ])
+
+    return response
+
+
+def export_pdf(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="customers.pdf"'
+
+    p = canvas.Canvas(response)
+
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(200, 800, "Customer Report")
+
+    y = 760
+
+    records = Record.objects.all()
+
+    for record in records:
+        line = f"{record.first_name} {record.last_name} | {record.email} | {record.phone}"
+        p.setFont("Helvetica", 10)
+        p.drawString(40, y, line)
+
+        y -= 20
+
+        if y < 50:
+            p.showPage()
+            y = 800
+
+    p.save()
+    return response

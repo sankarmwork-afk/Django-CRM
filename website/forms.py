@@ -45,6 +45,15 @@ class AddRecordForm(forms.ModelForm):
 	city = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"City", "class":"form-control"}), label="")
 	state = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"State", "class":"form-control"}), label="")
 	zipcode = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"Zipcode", "class":"form-control"}), label="")
+	notes = forms.CharField(
+		required=False,
+		widget=forms.Textarea(attrs={
+			"placeholder": "Customer Notes",
+			"class": "form-control",
+			"rows": 4
+		}),
+		label=""
+	)
 
 	class Meta:
 		model = Record
